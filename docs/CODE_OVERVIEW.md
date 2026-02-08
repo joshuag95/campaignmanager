@@ -14,6 +14,7 @@
 - `src/app/api/campaigns/route.ts`: Campaign list/create handlers (temporary header-based auth).
 - `src/app/api/entities/route.ts`: Entity list/create handlers with DM/player visibility behavior.
 - `src/lib/env.ts`: Runtime environment validation for server utilities.
+- `src/lib/auth/request-user.ts`: Bearer token auth helper for protected route handlers.
 - `src/lib/supabase/server.ts`: Service-role Supabase client factory for route handlers.
 - `src/lib/validators/*`: Shared Zod input schemas for API payload validation.
 - `public/*`: Static assets used by routes/components.

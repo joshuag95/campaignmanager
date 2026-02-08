@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUserId } from "@/lib/auth/request-user";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
 import { campaignInputSchema } from "@/lib/validators/campaign";
 
 // GET /api/campaigns
 // Returns all campaigns (ordered) visible to the authenticated user.
-// TODO: replace x-user-id header with proper session/JWT integration.
 export async function GET(request: NextRequest) {
-  const userId = request.headers.get("x-user-id");
+  const userId = await getAuthenticatedUserId(request);
 
   if (!userId) {
-    return NextResponse.json({ error: "Missing x-user-id header." }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. Provide a valid bearer token." }, { status: 401 });
   }
 
   const supabase = createServiceSupabaseClient();
@@ -41,12 +41,11 @@ export async function GET(request: NextRequest) {
 
 // POST /api/campaigns
 // Creates a campaign and inserts the owner as DM member.
-// TODO: swap header auth for Supabase Auth session user on protected routes.
 export async function POST(request: NextRequest) {
-  const userId = request.headers.get("x-user-id");
+  const userId = await getAuthenticatedUserId(request);
 
   if (!userId) {
-    return NextResponse.json({ error: "Missing x-user-id header." }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. Provide a valid bearer token." }, { status: 401 });
   }
 
   const json = await request.json().catch(() => null);

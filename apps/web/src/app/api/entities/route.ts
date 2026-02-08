@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUserId } from "@/lib/auth/request-user";
 import { createServiceSupabaseClient } from "@/lib/supabase/server";
 import { entityInputSchema } from "@/lib/validators/entity";
 
 // GET /api/entities?campaignId=<uuid>&type=<optional>
 // Returns entities for a campaign, with optional type filtering.
-// TODO: replace x-user-id header checks with session-based auth middleware.
 export async function GET(request: NextRequest) {
-  const userId = request.headers.get("x-user-id");
+  const userId = await getAuthenticatedUserId(request);
 
   if (!userId) {
-    return NextResponse.json({ error: "Missing x-user-id header." }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. Provide a valid bearer token." }, { status: 401 });
   }
 
   const searchParams = request.nextUrl.searchParams;
@@ -60,10 +60,10 @@ export async function GET(request: NextRequest) {
 // Creates a new entity (Item, NPC, PC, Location, Event, Lore, etc.).
 // Only DMs can create entities.
 export async function POST(request: NextRequest) {
-  const userId = request.headers.get("x-user-id");
+  const userId = await getAuthenticatedUserId(request);
 
   if (!userId) {
-    return NextResponse.json({ error: "Missing x-user-id header." }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. Provide a valid bearer token." }, { status: 401 });
   }
 
   const json = await request.json().catch(() => null);
