@@ -8,7 +8,8 @@
 
 ## Frontend Sections (`apps/web`)
 - `src/app/layout.tsx`: Global app wrapper, metadata, and shared font setup.
-- `src/app/page.tsx`: Current home route UI with starter content and CTA blocks.
+- `src/app/page.tsx`: Home route entrypoint that mounts the dashboard experience.
+- `src/components/campaign-dashboard.tsx`: Initial functional UI for token auth, campaign CRUD, and entity CRUD/listing.
 - `src/app/globals.css`: Global CSS tokens, dark mode token overrides, and body defaults.
 - `src/app/api/health/route.ts`: Service health endpoint for quick checks.
 - `src/app/api/campaigns/route.ts`: Campaign list/create handlers (temporary header-based auth).

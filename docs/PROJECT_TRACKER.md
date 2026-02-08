@@ -9,9 +9,10 @@
 - [x] Set up initial Supabase migration structure in `supabase/migrations`
 - [x] Implement core schema v1 (campaigns, entities, links, visibility)
 - [x] Add JWT-based API auth guard (replaces temporary `x-user-id` header flow)
+- [x] Build initial dashboard UI wired to `/api/campaigns` and `/api/entities`
 - [ ] Configure hosted Supabase project (auth/storage keys + linked project)
 - [ ] Build DM and player auth/roles
-- [ ] Build entity CRUD + association UI
+- [ ] Build advanced entity CRUD + association graph UI
 - [ ] Add image upload and media management
 - [ ] Add reveal/hide controls (record + field level)
 - [ ] Add Stripe subscriptions and tier gating
@@ -26,7 +27,7 @@
 ## Immediate Next Actions
 1. Create/link Supabase cloud project and apply `supabase/migrations/202602080001_init.sql`.
 2. Add browser session integration for route handlers (cookie-based Supabase SSR client).
-3. Build campaign + entity frontend pages that call `/api/campaigns` and `/api/entities`.
+3. Add entity-link management UI (connect NPCs/items/locations and view reverse links).
 
 ## Notes
 - We will update this file as milestones change.
