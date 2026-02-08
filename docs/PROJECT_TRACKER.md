@@ -10,6 +10,7 @@
 - [x] Implement core schema v1 (campaigns, entities, links, visibility)
 - [x] Add JWT-based API auth guard (replaces temporary `x-user-id` header flow)
 - [x] Build initial dashboard UI wired to `/api/campaigns` and `/api/entities`
+- [x] Add cookie-session fallback in API auth guard for SSR/browser auth flows
 - [ ] Configure hosted Supabase project (auth/storage keys + linked project)
 - [ ] Build DM and player auth/roles
 - [ ] Build advanced entity CRUD + association graph UI
