@@ -6,8 +6,9 @@
 - [x] Initialize git repository
 - [x] Connect repository to GitHub remote
 - [x] Scaffold Next.js app in `apps/web`
-- [ ] Configure Supabase project (auth/db/storage)
-- [ ] Implement core schema (campaigns, entities, links, visibility)
+- [x] Set up initial Supabase migration structure in `supabase/migrations`
+- [x] Implement core schema v1 (campaigns, entities, links, visibility)
+- [ ] Configure hosted Supabase project (auth/storage keys + linked project)
 - [ ] Build DM and player auth/roles
 - [ ] Build entity CRUD + association UI
 - [ ] Add image upload and media management
@@ -22,9 +23,10 @@
 - `scripts` - setup and utility scripts
 
 ## Immediate Next Actions
-1. Define MVP scope and user stories (DM + player flows).
-2. Set up Supabase project and local schema migration structure.
-3. Implement core auth and campaign membership model.
+1. Create/link Supabase cloud project and apply `supabase/migrations/202602080001_init.sql`.
+2. Add real session auth integration (replace temporary `x-user-id` header flow in API routes).
+3. Build campaign + entity frontend pages that call `/api/campaigns` and `/api/entities`.
 
 ## Notes
 - We will update this file as milestones change.
+- API routes currently use `x-user-id` header as a temporary auth bridge until Supabase Auth session middleware is wired.
