@@ -4,8 +4,8 @@
 - [x] Create base project directory at `C:\Users\jtgre\App Ideas\DND`
 - [x] Create initial folder structure
 - [x] Initialize git repository
-- [ ] Connect repository to GitHub remote
-- [ ] Scaffold Next.js app in `apps/web`
+- [x] Connect repository to GitHub remote
+- [x] Scaffold Next.js app in `apps/web`
 - [ ] Configure Supabase project (auth/db/storage)
 - [ ] Implement core schema (campaigns, entities, links, visibility)
 - [ ] Build DM and player auth/roles
@@ -22,9 +22,9 @@
 - `scripts` - setup and utility scripts
 
 ## Immediate Next Actions
-1. Create GitHub repo and add `origin`.
-2. Make initial commit.
-3. Scaffold web app and run locally.
+1. Define MVP scope and user stories (DM + player flows).
+2. Set up Supabase project and local schema migration structure.
+3. Implement core auth and campaign membership model.
 
 ## Notes
 - We will update this file as milestones change.
