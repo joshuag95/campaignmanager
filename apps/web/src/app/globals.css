@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
+/* Base design tokens used across light and dark themes. */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+/* Bridge CSS variables into Tailwind theme tokens. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,6 +14,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* OS-driven dark mode token override. */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,6 +22,7 @@
   }
 }
 
+/* Global body defaults shared by all routes. */
 body {
   background: var(--background);
   color: var(--foreground);
