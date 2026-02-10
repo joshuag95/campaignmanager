@@ -1,6 +1,8 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 type Campaign = {
   id: string;
@@ -35,15 +37,13 @@ type EntityLink = {
   created_at: string;
 };
 
-// Primary dashboard shell for early API integration testing.
-// This page intentionally keeps auth simple by accepting a bearer token manually.
 export function CampaignDashboard() {
-  const [token, setToken] = useState("");
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState("");
   const [entities, setEntities] = useState<Entity[]>([]);
   const [links, setLinks] = useState<EntityLink[]>([]);
-  const [message, setMessage] = useState("Enter a bearer token and load campaigns.");
+  const [message, setMessage] = useState("Loading campaigns...");
 
   // Form state for creating campaigns.
   const [campaignName, setCampaignName] = useState("");
@@ -63,24 +63,22 @@ export function CampaignDashboard() {
   const [linkRelationType, setLinkRelationType] = useState("ally");
   const [linkNotes, setLinkNotes] = useState("");
 
-  const authHeaders = useMemo(
+  const jsonHeaders = useMemo(
     () => ({
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     }),
-    [token],
+    [],
   );
+
+  async function selectCampaign(campaignId: string) {
+    setSelectedCampaignId(campaignId);
+    await Promise.all([loadEntities(campaignId), loadLinks(campaignId)]);
+  }
 
   // Loads campaigns available to the authenticated user.
   async function loadCampaigns() {
-    if (!token.trim()) {
-      setMessage("A bearer token is required.");
-      return;
-    }
-
     const response = await fetch("/api/campaigns", {
       method: "GET",
-      headers: authHeaders,
     });
 
     const payload = (await response.json()) as { campaigns?: Campaign[]; error?: string };
@@ -91,41 +89,21 @@ export function CampaignDashboard() {
 
     const nextCampaigns = payload.campaigns ?? [];
     setCampaigns(nextCampaigns);
-    setSelectedCampaignId((prev) => (prev ? prev : nextCampaigns[0]?.id ?? ""));
+
+    const nextSelectedCampaignId =
+      selectedCampaignId && nextCampaigns.some((campaign) => campaign.id === selectedCampaignId)
+        ? selectedCampaignId
+        : nextCampaigns[0]?.id ?? "";
+
+    if (nextSelectedCampaignId) {
+      await selectCampaign(nextSelectedCampaignId);
+    } else {
+      setSelectedCampaignId("");
+      setEntities([]);
+      setLinks([]);
+    }
+
     setMessage(`Loaded ${nextCampaigns.length} campaign(s).`);
-  }
-
-  // Creates a campaign and refreshes the campaign list.
-  async function handleCreateCampaign(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!campaignName.trim()) {
-      setMessage("Campaign name is required.");
-      return;
-    }
-
-    const response = await fetch("/api/campaigns", {
-      method: "POST",
-      headers: authHeaders,
-      body: JSON.stringify({
-        name: campaignName.trim(),
-        setting: campaignSetting.trim() || undefined,
-        summary: campaignSummary.trim() || undefined,
-      }),
-    });
-
-    const payload = (await response.json()) as { campaign?: Campaign; error?: string };
-    if (!response.ok) {
-      setMessage(payload.error ?? "Failed to create campaign.");
-      return;
-    }
-
-    setCampaignName("");
-    setCampaignSetting("");
-    setCampaignSummary("");
-    await loadCampaigns();
-    setSelectedCampaignId(payload.campaign?.id ?? "");
-    setMessage(`Created campaign: ${payload.campaign?.name ?? "unknown"}.`);
   }
 
   // Loads entities for the selected campaign.
@@ -137,7 +115,6 @@ export function CampaignDashboard() {
 
     const response = await fetch(`/api/entities?campaignId=${campaignId}`, {
       method: "GET",
-      headers: authHeaders,
     });
 
     const payload = (await response.json()) as { entities?: Entity[]; error?: string };
@@ -159,7 +136,6 @@ export function CampaignDashboard() {
       const fallback = nextEntities.find((entity) => entity.id !== nextEntities[0]?.id);
       return fallback?.id ?? nextEntities[0]?.id ?? "";
     });
-    setMessage(`Loaded ${nextEntities.length} entities.`);
   }
 
   // Loads relationship links for the selected campaign.
@@ -171,7 +147,6 @@ export function CampaignDashboard() {
 
     const response = await fetch(`/api/entity-links?campaignId=${campaignId}`, {
       method: "GET",
-      headers: authHeaders,
     });
 
     const payload = (await response.json()) as { links?: EntityLink[]; error?: string };
@@ -181,6 +156,38 @@ export function CampaignDashboard() {
     }
 
     setLinks(payload.links ?? []);
+  }
+
+  // Creates a campaign and refreshes the campaign list.
+  async function handleCreateCampaign(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!campaignName.trim()) {
+      setMessage("Campaign name is required.");
+      return;
+    }
+
+    const response = await fetch("/api/campaigns", {
+      method: "POST",
+      headers: jsonHeaders,
+      body: JSON.stringify({
+        name: campaignName.trim(),
+        setting: campaignSetting.trim() || undefined,
+        summary: campaignSummary.trim() || undefined,
+      }),
+    });
+
+    const payload = (await response.json()) as { campaign?: Campaign; error?: string };
+    if (!response.ok) {
+      setMessage(payload.error ?? "Failed to create campaign.");
+      return;
+    }
+
+    setCampaignName("");
+    setCampaignSetting("");
+    setCampaignSummary("");
+    await loadCampaigns();
+    setMessage(`Created campaign: ${payload.campaign?.name ?? "unknown"}.`);
   }
 
   // Creates an entity in the selected campaign and refreshes entity list.
@@ -199,7 +206,7 @@ export function CampaignDashboard() {
 
     const response = await fetch("/api/entities", {
       method: "POST",
-      headers: authHeaders,
+      headers: jsonHeaders,
       body: JSON.stringify({
         campaignId: selectedCampaignId,
         type: entityType,
@@ -252,7 +259,7 @@ export function CampaignDashboard() {
 
     const response = await fetch("/api/entity-links", {
       method: "POST",
-      headers: authHeaders,
+      headers: jsonHeaders,
       body: JSON.stringify({
         campaignId: selectedCampaignId,
         fromEntityId: linkFromEntityId,
@@ -273,6 +280,24 @@ export function CampaignDashboard() {
     setMessage("Created relationship link.");
   }
 
+  async function handleSignOut() {
+    const supabase = createBrowserSupabaseClient();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    router.replace("/auth");
+    router.refresh();
+  }
+
+  useEffect(() => {
+    void loadCampaigns();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const entitiesById = useMemo(() => {
     return new Map(entities.map((entity) => [entity.id, entity]));
   }, [entities]);
@@ -280,37 +305,26 @@ export function CampaignDashboard() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,#f5f0dd_0,#efe7ce_40%,#e8dcc0_100%)] text-zinc-900">
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-8">
-        {/* Header section: project context and request status message. */}
         <section className="rounded-2xl border border-zinc-800/10 bg-white/80 p-6 shadow-sm backdrop-blur">
-          <h1 className="text-3xl font-bold tracking-tight">DND Campaign Manager</h1>
-          <p className="mt-2 text-sm text-zinc-700">
-            API integration dashboard for campaigns, entities, and relationship links.
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">DND Campaign Manager</h1>
+              <p className="mt-2 text-sm text-zinc-700">
+                API integration dashboard for campaigns, entities, and relationship links.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
+            >
+              Sign Out
+            </button>
+          </div>
           <p className="mt-4 rounded-md bg-zinc-900 px-3 py-2 text-sm text-zinc-100">{message}</p>
         </section>
 
-        {/* Auth section: manual bearer token entry until full auth UI is added. */}
-        <section className="rounded-2xl border border-zinc-800/10 bg-white/80 p-6 shadow-sm backdrop-blur">
-          <h2 className="text-xl font-semibold">Authentication</h2>
-          <div className="mt-4 flex flex-col gap-3 md:flex-row">
-            <input
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              placeholder="Paste Supabase access token"
-              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none ring-amber-400/50 focus:ring-2"
-            />
-            <button
-              type="button"
-              onClick={loadCampaigns}
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
-            >
-              Load Campaigns
-            </button>
-          </div>
-        </section>
-
         <section className="grid gap-6 lg:grid-cols-3">
-          {/* Campaign section: create and list campaigns for the current user. */}
           <div className="rounded-2xl border border-zinc-800/10 bg-white/80 p-6 shadow-sm backdrop-blur">
             <h2 className="text-xl font-semibold">Campaigns</h2>
             <form className="mt-4 flex flex-col gap-3" onSubmit={handleCreateCampaign}>
@@ -344,10 +358,7 @@ export function CampaignDashboard() {
                 <li key={campaign.id}>
                   <button
                     type="button"
-                    onClick={async () => {
-                      setSelectedCampaignId(campaign.id);
-                      await Promise.all([loadEntities(campaign.id), loadLinks(campaign.id)]);
-                    }}
+                    onClick={() => void selectCampaign(campaign.id)}
                     className={`w-full rounded-md border px-3 py-2 text-left text-sm transition ${
                       selectedCampaignId === campaign.id
                         ? "border-amber-600 bg-amber-50"
@@ -362,7 +373,6 @@ export function CampaignDashboard() {
             </ul>
           </div>
 
-          {/* Entity section: create and list entities within selected campaign. */}
           <div className="rounded-2xl border border-zinc-800/10 bg-white/80 p-6 shadow-sm backdrop-blur">
             <h2 className="text-xl font-semibold">Entities</h2>
             <p className="mt-1 text-xs text-zinc-600">
@@ -429,7 +439,6 @@ export function CampaignDashboard() {
             </ul>
           </div>
 
-          {/* Link section: manage graph-style relationships between entities. */}
           <div className="rounded-2xl border border-zinc-800/10 bg-white/80 p-6 shadow-sm backdrop-blur">
             <h2 className="text-xl font-semibold">Entity Links</h2>
             <p className="mt-1 text-xs text-zinc-600">

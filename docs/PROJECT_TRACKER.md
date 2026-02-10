@@ -12,6 +12,7 @@
 - [x] Build initial dashboard UI wired to `/api/campaigns` and `/api/entities`
 - [x] Add cookie-session fallback in API auth guard for SSR/browser auth flows
 - [x] Add entity-link API and dashboard UI for relationship management
+- [x] Replace manual token auth with dedicated `/auth` page and route guards
 - [ ] Configure hosted Supabase project (auth/storage keys + linked project)
 - [ ] Build DM and player auth/roles
 - [ ] Build advanced entity CRUD + association graph UI
@@ -28,7 +29,7 @@
 
 ## Immediate Next Actions
 1. Create/link Supabase cloud project and apply `supabase/migrations/202602080001_init.sql`.
-2. Replace temporary dashboard auth controls with dedicated auth pages + guarded routes.
+2. Add role-aware UX boundaries for DM vs Player actions in the dashboard.
 3. Add entity detail pages with reverse-associated data blocks (items, links, related locations/NPCs).
 
 ## Notes
