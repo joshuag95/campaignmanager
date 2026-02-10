@@ -33,9 +33,33 @@
 - `scripts` - setup and utility scripts
 
 ## Immediate Next Actions
-1. Create/link Supabase cloud project and apply `supabase/migrations/202602080001_init.sql`.
-2. Expand CRUD to include edit/delete flows and stronger filtering.
-3. Redesign UI with a smooth, aesthetically polished fantasy/DND visual theme.
+1. Complete the final hosted Supabase auth toggle: disable `Confirm email` in Dashboard (`Authentication > Providers > Email`).
+2. Validate end-to-end auth flow after toggle (sign up, sign in, role-gated dashboard behavior).
+3. Start UI polish pass for fantasy/DND visual redesign.
+
+## Session Handoff (February 10, 2026)
+### Completed this session
+- Hosted Supabase credentials configured locally in `apps/web/.env.local` (not committed).
+- Hosted connectivity verified: `campaigns` and `entity_links` query successfully via service role key.
+- Implemented and shipped:
+  - Dedicated auth page + middleware route guards.
+  - DM vs Player role-aware dashboard boundaries.
+  - Entity detail page with reverse associations and navigation.
+  - DM-only edit/delete entity API + detail-page controls.
+  - Dashboard entity filtering (type + search).
+- Web app checks pass:
+  - `npm run lint --prefix apps/web`
+  - `npm run build --prefix apps/web`
+
+### Remaining to resume next session
+- Manual Supabase dashboard change still pending:
+  - set `mailer_autoconfirm=true` by disabling "Confirm email".
+- Run live auth smoke test against hosted project after that toggle.
+- Continue product roadmap:
+  - advanced entity CRUD workflows,
+  - image/media management,
+  - reveal/hide controls,
+  - subscriptions and deployment.
 
 ## Notes
 - We will update this file as milestones change.
