@@ -184,7 +184,17 @@ export default function EntityDetailPage() {
               {outgoingLinks.map((link) => (
                 <li key={link.id} className="rounded-md border border-zinc-300 bg-white p-3 text-sm">
                   <p className="font-semibold">
-                    [{link.relation_type}] {link.related_entity?.name ?? "Unknown"}
+                    [{link.relation_type}]{" "}
+                    {link.related_entity ? (
+                      <Link
+                        className="underline decoration-zinc-400 underline-offset-2"
+                        href={`/entities/${link.related_entity.id}`}
+                      >
+                        {link.related_entity.name}
+                      </Link>
+                    ) : (
+                      "Unknown"
+                    )}
                   </p>
                   <p className="text-xs text-zinc-500">{link.related_entity?.type ?? "?"}</p>
                   <p className="mt-1 text-zinc-700">{link.notes || "No notes."}</p>
@@ -199,13 +209,61 @@ export default function EntityDetailPage() {
               {incomingLinks.map((link) => (
                 <li key={link.id} className="rounded-md border border-zinc-300 bg-white p-3 text-sm">
                   <p className="font-semibold">
-                    {link.related_entity?.name ?? "Unknown"} [{link.relation_type}]
+                    {link.related_entity ? (
+                      <Link
+                        className="underline decoration-zinc-400 underline-offset-2"
+                        href={`/entities/${link.related_entity.id}`}
+                      >
+                        {link.related_entity.name}
+                      </Link>
+                    ) : (
+                      "Unknown"
+                    )}{" "}
+                    [{link.relation_type}]
                   </p>
                   <p className="text-xs text-zinc-500">{link.related_entity?.type ?? "?"}</p>
                   <p className="mt-1 text-zinc-700">{link.notes || "No notes."}</p>
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-zinc-800/10 bg-white/90 p-6 shadow-sm">
+          <h2 className="text-xl font-semibold">Relationship Map</h2>
+          <p className="mt-2 text-sm text-zinc-700">
+            Outgoing: <span className="font-semibold">{outgoingLinks.length}</span> | Incoming:{" "}
+            <span className="font-semibold">{incomingLinks.length}</span>
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="text-sm font-semibold text-zinc-800">Leads To</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {outgoingLinks.map((link) => (
+                  <Link
+                    key={`out-${link.id}`}
+                    href={link.related_entity ? `/entities/${link.related_entity.id}` : "#"}
+                    className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs text-emerald-900"
+                  >
+                    {link.relation_type}: {link.related_entity?.name ?? "Unknown"}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-800">Referenced By</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {incomingLinks.map((link) => (
+                  <Link
+                    key={`in-${link.id}`}
+                    href={link.related_entity ? `/entities/${link.related_entity.id}` : "#"}
+                    className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs text-amber-900"
+                  >
+                    {link.related_entity?.name ?? "Unknown"}: {link.relation_type}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 

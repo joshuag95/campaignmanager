@@ -17,6 +17,7 @@
 - [x] Add entity detail pages with reverse-linked relationship sections
 - [x] Add entity-level edit/delete API and DM-only controls on detail page
 - [x] Add entity list filtering (type + text search) in dashboard
+- [x] Add richer association navigation patterns on entity detail pages
 - [ ] Configure hosted Supabase project (auth/storage keys + linked project)
 - [ ] Build DM and player auth/roles
 - [ ] Build advanced entity CRUD + association graph UI
@@ -34,7 +35,7 @@
 ## Immediate Next Actions
 1. Create/link Supabase cloud project and apply `supabase/migrations/202602080001_init.sql`.
 2. Expand CRUD to include edit/delete flows and stronger filtering.
-3. Add richer association visualization and navigation patterns.
+3. Redesign UI with a smooth, aesthetically polished fantasy/DND visual theme.
 
 ## Notes
 - We will update this file as milestones change.
