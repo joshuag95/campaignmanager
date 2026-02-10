@@ -40,3 +40,8 @@
 ## Notes
 - We will update this file as milestones change.
 - API routes now require `Authorization: Bearer <supabase_access_token>` on protected endpoints.
+- Hosted Supabase connectivity verified on February 10, 2026:
+  - `campaigns` and `entity_links` tables are queryable with service role key.
+  - App is configured locally via `apps/web/.env.local`.
+  - Auth setting `mailer_autoconfirm` is currently `false` (email confirmation ON), but requested mode is OFF.
+  - Remaining manual step in Supabase Dashboard: Authentication > Providers > Email > disable "Confirm email".
