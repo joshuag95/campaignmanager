@@ -9,6 +9,7 @@ type Campaign = {
   name: string;
   setting: string | null;
   summary: string | null;
+  role: "DM" | "PLAYER";
   created_at: string;
   updated_at: string;
 };
@@ -198,6 +199,10 @@ export function CampaignDashboard() {
       setMessage("Select a campaign first.");
       return;
     }
+    if (!isSelectedCampaignDm) {
+      setMessage("Only DMs can create entities.");
+      return;
+    }
 
     if (!entityName.trim()) {
       setMessage("Entity name is required.");
@@ -239,6 +244,10 @@ export function CampaignDashboard() {
 
     if (!selectedCampaignId) {
       setMessage("Select a campaign first.");
+      return;
+    }
+    if (!isSelectedCampaignDm) {
+      setMessage("Only DMs can create relationship links.");
       return;
     }
 
@@ -301,6 +310,11 @@ export function CampaignDashboard() {
   const entitiesById = useMemo(() => {
     return new Map(entities.map((entity) => [entity.id, entity]));
   }, [entities]);
+  const selectedCampaign = useMemo(
+    () => campaigns.find((campaign) => campaign.id === selectedCampaignId) ?? null,
+    [campaigns, selectedCampaignId],
+  );
+  const isSelectedCampaignDm = selectedCampaign?.role === "DM";
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,#f5f0dd_0,#efe7ce_40%,#e8dcc0_100%)] text-zinc-900">
@@ -366,7 +380,9 @@ export function CampaignDashboard() {
                     }`}
                   >
                     <p className="font-semibold">{campaign.name}</p>
-                    <p className="text-xs text-zinc-600">{campaign.setting ?? "No setting"}</p>
+                    <p className="text-xs text-zinc-600">
+                      {campaign.setting ?? "No setting"} • role: {campaign.role}
+                    </p>
                   </button>
                 </li>
               ))}
@@ -378,8 +394,24 @@ export function CampaignDashboard() {
             <p className="mt-1 text-xs text-zinc-600">
               Selected campaign: {selectedCampaignId || "none"}
             </p>
+            <p className="mt-1 text-xs text-zinc-600">
+              Access level:{" "}
+              {selectedCampaign ? (
+                <span className={isSelectedCampaignDm ? "font-semibold text-emerald-700" : "font-semibold text-zinc-700"}>
+                  {selectedCampaign.role}
+                </span>
+              ) : (
+                "none"
+              )}
+            </p>
+            {!isSelectedCampaignDm && selectedCampaignId ? (
+              <p className="mt-3 rounded-md bg-zinc-100 px-3 py-2 text-xs text-zinc-700">
+                Player mode: entity creation is limited to DMs.
+              </p>
+            ) : null}
             <form className="mt-4 flex flex-col gap-3" onSubmit={handleCreateEntity}>
               <select
+                disabled={!isSelectedCampaignDm}
                 value={entityType}
                 onChange={(event) => setEntityType(event.target.value)}
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
@@ -392,18 +424,21 @@ export function CampaignDashboard() {
                 <option>Event</option>
               </select>
               <input
+                disabled={!isSelectedCampaignDm}
                 value={entityName}
                 onChange={(event) => setEntityName(event.target.value)}
                 placeholder="Entity name"
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
               />
               <textarea
+                disabled={!isSelectedCampaignDm}
                 value={entityDescription}
                 onChange={(event) => setEntityDescription(event.target.value)}
                 placeholder="Entity description"
                 className="min-h-24 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
               />
               <input
+                disabled={!isSelectedCampaignDm}
                 value={entityTagsCsv}
                 onChange={(event) => setEntityTagsCsv(event.target.value)}
                 placeholder="Tags (comma separated)"
@@ -411,6 +446,7 @@ export function CampaignDashboard() {
               />
               <label className="flex items-center gap-2 text-sm">
                 <input
+                  disabled={!isSelectedCampaignDm}
                   type="checkbox"
                   checked={entityVisibleToPlayers}
                   onChange={(event) => setEntityVisibleToPlayers(event.target.checked)}
@@ -419,6 +455,7 @@ export function CampaignDashboard() {
               </label>
               <button
                 type="submit"
+                disabled={!isSelectedCampaignDm}
                 className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
               >
                 Create Entity
@@ -444,8 +481,14 @@ export function CampaignDashboard() {
             <p className="mt-1 text-xs text-zinc-600">
               Connect entities and inspect reverse-linked relationships.
             </p>
+            {!isSelectedCampaignDm && selectedCampaignId ? (
+              <p className="mt-3 rounded-md bg-zinc-100 px-3 py-2 text-xs text-zinc-700">
+                Player mode: relationship creation is limited to DMs.
+              </p>
+            ) : null}
             <form className="mt-4 flex flex-col gap-3" onSubmit={handleCreateLink}>
               <select
+                disabled={!isSelectedCampaignDm}
                 value={linkFromEntityId}
                 onChange={(event) => setLinkFromEntityId(event.target.value)}
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
@@ -458,6 +501,7 @@ export function CampaignDashboard() {
                 ))}
               </select>
               <select
+                disabled={!isSelectedCampaignDm}
                 value={linkToEntityId}
                 onChange={(event) => setLinkToEntityId(event.target.value)}
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
@@ -470,12 +514,14 @@ export function CampaignDashboard() {
                 ))}
               </select>
               <input
+                disabled={!isSelectedCampaignDm}
                 value={linkRelationType}
                 onChange={(event) => setLinkRelationType(event.target.value)}
                 placeholder="Relation type (ally, owns, located_in...)"
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
               />
               <textarea
+                disabled={!isSelectedCampaignDm}
                 value={linkNotes}
                 onChange={(event) => setLinkNotes(event.target.value)}
                 placeholder="Optional notes"
@@ -483,6 +529,7 @@ export function CampaignDashboard() {
               />
               <button
                 type="submit"
+                disabled={!isSelectedCampaignDm}
                 className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
               >
                 Create Link

@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("campaign_members")
-    .select("campaigns(id, name, setting, summary, created_at, updated_at)")
+    .select("role, campaigns(id, name, setting, summary, created_at, updated_at)")
     .eq("user_id", userId)
     .eq("status", "active");
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const campaigns = (data ?? []).flatMap(
+  const campaignsWithRoles = (data ?? []).flatMap(
     (row: {
       campaigns: Array<{
         id: string;
@@ -34,9 +34,14 @@ export async function GET(request: NextRequest) {
         created_at: string;
         updated_at: string;
       }>;
-    }) => row.campaigns ?? [],
+      role: "DM" | "PLAYER";
+    }) =>
+      (row.campaigns ?? []).map((campaign) => ({
+        ...campaign,
+        role: row.role,
+      })),
   );
-  return NextResponse.json({ campaigns });
+  return NextResponse.json({ campaigns: campaignsWithRoles });
 }
 
 // POST /api/campaigns
