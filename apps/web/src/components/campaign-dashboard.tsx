@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
@@ -57,6 +58,8 @@ export function CampaignDashboard() {
   const [entityDescription, setEntityDescription] = useState("");
   const [entityTagsCsv, setEntityTagsCsv] = useState("");
   const [entityVisibleToPlayers, setEntityVisibleToPlayers] = useState(false);
+  const [entityTypeFilter, setEntityTypeFilter] = useState("ALL");
+  const [entitySearch, setEntitySearch] = useState("");
 
   // Form state for creating links between entities.
   const [linkFromEntityId, setLinkFromEntityId] = useState("");
@@ -114,7 +117,8 @@ export function CampaignDashboard() {
       return;
     }
 
-    const response = await fetch(`/api/entities?campaignId=${campaignId}`, {
+    const typeQuery = entityTypeFilter !== "ALL" ? `&type=${encodeURIComponent(entityTypeFilter)}` : "";
+    const response = await fetch(`/api/entities?campaignId=${campaignId}${typeQuery}`, {
       method: "GET",
     });
 
@@ -307,9 +311,29 @@ export function CampaignDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!selectedCampaignId) {
+      return;
+    }
+
+    void loadEntities(selectedCampaignId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityTypeFilter, selectedCampaignId]);
+
   const entitiesById = useMemo(() => {
     return new Map(entities.map((entity) => [entity.id, entity]));
   }, [entities]);
+  const filteredEntities = useMemo(() => {
+    const search = entitySearch.trim().toLowerCase();
+    if (!search) {
+      return entities;
+    }
+
+    return entities.filter((entity) => {
+      const haystack = `${entity.name} ${entity.type} ${entity.description ?? ""} ${entity.tags.join(" ")}`.toLowerCase();
+      return haystack.includes(search);
+    });
+  }, [entities, entitySearch]);
   const selectedCampaign = useMemo(
     () => campaigns.find((campaign) => campaign.id === selectedCampaignId) ?? null,
     [campaigns, selectedCampaignId],
@@ -409,6 +433,27 @@ export function CampaignDashboard() {
                 Player mode: entity creation is limited to DMs.
               </p>
             ) : null}
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              <select
+                value={entityTypeFilter}
+                onChange={(event) => setEntityTypeFilter(event.target.value)}
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+              >
+                <option value="ALL">All types</option>
+                <option value="NPC">NPC</option>
+                <option value="PC">PC</option>
+                <option value="Item">Item</option>
+                <option value="Location">Location</option>
+                <option value="Lore">Lore</option>
+                <option value="Event">Event</option>
+              </select>
+              <input
+                value={entitySearch}
+                onChange={(event) => setEntitySearch(event.target.value)}
+                placeholder="Search entities"
+                className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+              />
+            </div>
             <form className="mt-4 flex flex-col gap-3" onSubmit={handleCreateEntity}>
               <select
                 disabled={!isSelectedCampaignDm}
@@ -462,10 +507,13 @@ export function CampaignDashboard() {
               </button>
             </form>
             <ul className="mt-4 space-y-2">
-              {entities.map((entity) => (
+              {filteredEntities.map((entity) => (
                 <li key={entity.id} className="rounded-md border border-zinc-300 bg-white p-3 text-sm">
                   <p className="font-semibold">
-                    {entity.name} <span className="text-zinc-500">({entity.type})</span>
+                    <Link className="underline decoration-zinc-400 underline-offset-2" href={`/entities/${entity.id}`}>
+                      {entity.name}
+                    </Link>{" "}
+                    <span className="text-zinc-500">({entity.type})</span>
                   </p>
                   <p className="mt-1 text-zinc-700">{entity.description || "No description provided."}</p>
                   <p className="mt-1 text-xs text-zinc-500">

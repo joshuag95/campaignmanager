@@ -14,6 +14,9 @@
 - [x] Add entity-link API and dashboard UI for relationship management
 - [x] Replace manual token auth with dedicated `/auth` page and route guards
 - [x] Add role-aware dashboard boundaries for DM vs Player create actions
+- [x] Add entity detail pages with reverse-linked relationship sections
+- [x] Add entity-level edit/delete API and DM-only controls on detail page
+- [x] Add entity list filtering (type + text search) in dashboard
 - [ ] Configure hosted Supabase project (auth/storage keys + linked project)
 - [ ] Build DM and player auth/roles
 - [ ] Build advanced entity CRUD + association graph UI
@@ -30,8 +33,8 @@
 
 ## Immediate Next Actions
 1. Create/link Supabase cloud project and apply `supabase/migrations/202602080001_init.sql`.
-2. Add entity detail pages with reverse-associated data blocks (items, links, related locations/NPCs).
-3. Expand CRUD to include edit/delete flows and stronger filtering.
+2. Expand CRUD to include edit/delete flows and stronger filtering.
+3. Add richer association visualization and navigation patterns.
 
 ## Notes
 - We will update this file as milestones change.
